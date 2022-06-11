@@ -22,14 +22,14 @@ typedef K::Point_2 Point;
 int main()
 {
     vector<Point> P;
-    unsigned numberOfPoints = 3000;
+    unsigned numberOfPoints = 4000;
     unsigned sizeOfSquare = 500;
     generatePointsInsideASquare(numberOfPoints,sizeOfSquare,P);
 
     double stretchFactor = 1.1;
     unordered_map<int, vector<int>> adjMap, adjMap2;
     vector<Edge> spannerEdges;
-    constructFG_GreedySpannerV4(P,spannerEdges,stretchFactor,adjMap);
+    constructGreedySpannerV5(P,spannerEdges,stretchFactor,adjMap);
 
     CGAL::Timer clock;
     clock.start();

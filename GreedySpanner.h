@@ -124,4 +124,91 @@ void constructFG_GreedySpannerV4(vector<Point> &P, vector<Edge> &spannerEdges, c
 }
 
 
+// FG-greedy with Delaunay; much faster than orginal greedy
+vector<Edge> constructGreedySpannerV5( vector<Point> &P, vector<Edge> &spannerEdges, const double t, unordered_map<int, vector<int>> &G) {
+
+  vector<vector<double>> pairwiseDistances(P.size(), vector<double>(P.size(), 0)),
+      shortestPathLength(P.size(), vector<double>(P.size(), DBL_MAX));
+//  vector<Edge> spannerEdges;
+  spannerEdges.reserve(6 * P.size() );
+
+  // Using Del triang. as the starting point is somewhat helpful; slightly faster but puts a bit more edges
+  //    unordered_map<unsigned,unsigned> idMap;
+  //    unsigned index = 0;
+  //    for(Point p : P)
+  //        idMap[p.id] = index++;
+
+  // vector<Edge> delaunayEdges;
+
+  unordered_map<Point,unsigned> idMap;
+  unsigned index = 0;
+  for(Point p : P)
+    idMap[p] = index++;
+
+  DelaunayTriangulation DT(P,spannerEdges,idMap);
+
+  // for( const Edge &e : delaunayEdges )
+  //     spannerEdges.emplace_back(e.first, e.second);
+  /////////////////// comment: code runs much faster if sqrt in distance calculation is not used but gives wrong s.f.
+
+  vector<Edge> completeGraphE;
+  completeGraphE.reserve((P.size() * (P.size()-1))/2);
+  for (unsigned i = 0; i < P.size() - 1; i++)
+    for (unsigned j = i + 1; j < P.size(); j++) {
+      completeGraphE.emplace_back(make_pair(i, j));
+      pairwiseDistances[i][j] = pairwiseDistances[j][i] = std::sqrt(squared_distance(P[i], P[j])) ;
+    }
+
+  sort(completeGraphE.begin(), completeGraphE.end(), [pairwiseDistances](const Edge &e1, const Edge &e2) {
+    return pairwiseDistances[e1.first][e1.second] < pairwiseDistances[e2.first][e2.second];
+  });
+
+  /////////// boost's stuff
+  using namespace boost;
+  typedef adjacency_list<vecS, vecS, undirectedS, no_property,
+                         property<edge_weight_t, double, property<edge_weight2_t, double> > > Graph;
+  typedef graph_traits<Graph>::vertex_descriptor vertex_descriptor;
+  Graph g(&spannerEdges[0], &spannerEdges[spannerEdges.size()], P.size());
+  vector<double> d(num_vertices(g));
+  vector<vertex_descriptor> p(num_vertices(g));
+  property_map<Graph, edge_weight_t>::type w = get(edge_weight, g);
+  vector<double> weightsForDijkstraGraph(spannerEdges.size());
+  weightsForDijkstraGraph.reserve(6 * P.size());
+  graph_traits<Graph>::edge_iterator edge, e_end;
+  boost::tie(edge, e_end) = edges(g);
+
+  for (unsigned i = 0; i < spannerEdges.size(); i++)
+    weightsForDijkstraGraph[i] = pairwiseDistances[spannerEdges[i].first][spannerEdges[i].second];
+
+  double *wp = &weightsForDijkstraGraph[0];
+  //////////////////////
+
+  for (const Edge &e: completeGraphE) {
+
+    if ( (boost::edge(e.first,e.second,g)).second ) // if the edge is present, do nothing
+      continue;
+
+    double tTimesdistance = t * pairwiseDistances [e.first] [e.second] ;
+
+    if (shortestPathLength[e.first][e.second] <= tTimesdistance)
+      continue;
+    /////////////////// using boost's dijkstra
+    for (; edge != e_end; ++edge)
+      w[*edge] = *wp++;
+
+    dijkstra_shortest_paths(g, vertex(e.first, g), boost::predecessor_map(&p[0]).distance_map(&d[0]));
+
+    for (unsigned i = 0; i < d.size(); i++)
+      shortestPathLength[e.first][i] = shortestPathLength[i][e.first] = std::min(shortestPathLength[e.first][i], d[i]);
+    ////////////////////
+    if (shortestPathLength[e.first][e.second] > tTimesdistance ) {
+      spannerEdges.emplace_back(e.first, e.second);
+      boost::add_edge(e.first, e.second, pairwiseDistances[e.first][e.second], g);
+      weightsForDijkstraGraph.emplace_back(pairwiseDistances[e.first][e.second]);
+    }
+  }
+  return spannerEdges;
+}
+
+
 #endif // TEST_GREEDYSPANNER_H

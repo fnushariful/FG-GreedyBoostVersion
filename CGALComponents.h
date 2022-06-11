@@ -80,7 +80,7 @@ void generatePointsInsideASquare(const unsigned n, const double sizeOfSquare, ve
   for( K::Point_2 p : points )
     P.emplace_back( Point(p.x(), p.y(), id++) );
 
-  // perturb_points_2( P.begin(), P.end(), 0.0001, 0.0001 );
+   perturb_points_2( P.begin(), P.end(), 0.0001, 0.0001 );
 }
 
 void generatePointsInsideADisc(const unsigned n, const double radiusOfDisk, vector<Point> &P) {
