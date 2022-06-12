@@ -140,12 +140,12 @@ vector<Edge> constructGreedySpannerV5( vector<Point> &P, vector<Edge> &spannerEd
 
   // vector<Edge> delaunayEdges;
 
-  unordered_map<Point,unsigned> idMap;
-  unsigned index = 0;
-  for(Point p : P)
-    idMap[p] = index++;
-
-  DelaunayTriangulation DT(P,spannerEdges,idMap);
+//  unordered_map<Point,unsigned> idMap;
+//  unsigned index = 0;
+//  for(Point p : P)
+//    idMap[p] = index++;
+//
+//  DelaunayTriangulation DT(P,spannerEdges,idMap);
 
   // for( const Edge &e : delaunayEdges )
   //     spannerEdges.emplace_back(e.first, e.second);

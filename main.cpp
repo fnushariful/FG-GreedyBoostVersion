@@ -6,7 +6,8 @@
 #include <CGAL/boost/iterator/counting_iterator.hpp>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
-#include <CGAL/Timer.h>
+//#include <CGAL/Timer.h>
+#include <CGAL/Real_timer.h>
 
 typedef CGAL::Simple_cartesian<double> Kernel;
 typedef Kernel::Point_2 Point_2;
@@ -22,20 +23,21 @@ typedef K::Point_2 Point;
 int main()
 {
     vector<Point> P;
-    unsigned numberOfPoints = 4000;
+    unsigned numberOfPoints = 10000;
     unsigned sizeOfSquare = 500;
     generatePointsInsideASquare(numberOfPoints,sizeOfSquare,P);
 
     double stretchFactor = 1.1;
     unordered_map<int, vector<int>> adjMap, adjMap2;
     vector<Edge> spannerEdges;
-    constructGreedySpannerV5(P,spannerEdges,stretchFactor,adjMap);
 
-    CGAL::Timer clock;
+
+    CGAL::Real_timer clock;
     clock.start();
+    constructGreedySpannerV5(P,spannerEdges,stretchFactor,adjMap);
     cout<<spannerEdges.size()<<endl;
     clock.stop();
-    cout<<setprecision(5)<<clock.time()<<endl;
+    cout<<"Time Needed "<<clock.time()<<" seconds = "<<clock.time()/60<<" minutes"<<endl;
 
 
 
