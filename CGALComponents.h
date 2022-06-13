@@ -67,20 +67,22 @@ inline double L2distance(const Point &p1, const Point &p2) {
 
 bool turnOnPdfs = false;
 
-void generatePointsInsideASquare(const unsigned n, const double sizeOfSquare, vector<Point> &P) {
+void generatePointsInsideASquare(const unsigned n,
+                                 const double sizeOfSquare,
+                                 vector<Point> &P) {
   vector<K::Point_2> points;
   typedef Random_points_in_square_2< K::Point_2, Creator_uniform_2< double, K::Point_2 > > Point_generator;
   Point_generator g(sizeOfSquare/2);
 
   //random_convex_set_2(n, back_inserter(points), g);
 
-  std::copy_n(g, n, back_inserter(points));
+  std::copy_n(g, n, back_inserter(P));
 
-  unsigned id = 0;
-  for( K::Point_2 p : points )
-    P.emplace_back( Point(p.x(), p.y(), id++) );
+//  unsigned id = 0;
+//  for( K::Point_2 p : points )
+//    P.emplace_back( Point(p.x(), p.y(), id++) );
 
-   perturb_points_2( P.begin(), P.end(), 0.0001, 0.0001 );
+   //perturb_points_2( P.begin(), P.end(), 0.0001, 0.0001 );
 }
 
 void generatePointsInsideADisc(const unsigned n, const double radiusOfDisk, vector<Point> &P) {

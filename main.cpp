@@ -23,7 +23,7 @@ typedef K::Point_2 Point;
 int main()
 {
     vector<Point> P;
-    unsigned numberOfPoints = 10000;
+    unsigned numberOfPoints = 128000;
     unsigned sizeOfSquare = 500;
     generatePointsInsideASquare(numberOfPoints,sizeOfSquare,P);
 

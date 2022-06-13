@@ -6,6 +6,7 @@
 #include <CGAL/Simple_cartesian.h>
 #include <boost/functional/hash.hpp> // hashing pairs
 #include <boost/heap/fibonacci_heap.hpp> // ordering
+#include <boost/graph/dijkstra_shortest_paths_no_color_map.hpp>
 
 #include <CGAL/boost/iterator/counting_iterator.hpp>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -140,16 +141,12 @@ vector<Edge> constructGreedySpannerV5( vector<Point> &P, vector<Edge> &spannerEd
 
   // vector<Edge> delaunayEdges;
 
-//  unordered_map<Point,unsigned> idMap;
-//  unsigned index = 0;
-//  for(Point p : P)
-//    idMap[p] = index++;
-//
-//  DelaunayTriangulation DT(P,spannerEdges,idMap);
+  unordered_map<Point,unsigned> idMap;
+  unsigned index = 0;
+  for(Point p : P)
+    idMap[p] = index++;
 
-  // for( const Edge &e : delaunayEdges )
-  //     spannerEdges.emplace_back(e.first, e.second);
-  /////////////////// comment: code runs much faster if sqrt in distance calculation is not used but gives wrong s.f.
+  DelaunayTriangulation DT(P,spannerEdges,idMap);
 
   vector<Edge> completeGraphE;
   completeGraphE.reserve((P.size() * (P.size()-1))/2);
@@ -159,16 +156,21 @@ vector<Edge> constructGreedySpannerV5( vector<Point> &P, vector<Edge> &spannerEd
       pairwiseDistances[i][j] = pairwiseDistances[j][i] = std::sqrt(squared_distance(P[i], P[j])) ;
     }
 
+
+
   sort(completeGraphE.begin(), completeGraphE.end(), [pairwiseDistances](const Edge &e1, const Edge &e2) {
     return pairwiseDistances[e1.first][e1.second] < pairwiseDistances[e2.first][e2.second];
   });
+
 
   /////////// boost's stuff
   using namespace boost;
   typedef adjacency_list<vecS, vecS, undirectedS, no_property,
                          property<edge_weight_t, double, property<edge_weight2_t, double> > > Graph;
   typedef graph_traits<Graph>::vertex_descriptor vertex_descriptor;
+
   Graph g(&spannerEdges[0], &spannerEdges[spannerEdges.size()], P.size());
+
   vector<double> d(num_vertices(g));
   vector<vertex_descriptor> p(num_vertices(g));
   property_map<Graph, edge_weight_t>::type w = get(edge_weight, g);
@@ -196,7 +198,7 @@ vector<Edge> constructGreedySpannerV5( vector<Point> &P, vector<Edge> &spannerEd
     for (; edge != e_end; ++edge)
       w[*edge] = *wp++;
 
-    dijkstra_shortest_paths(g, vertex(e.first, g), boost::predecessor_map(&p[0]).distance_map(&d[0]));
+    dijkstra_shortest_paths_no_color_map(g, vertex(e.first, g), boost::predecessor_map(&p[0]).distance_map(&d[0]));
 
     for (unsigned i = 0; i < d.size(); i++)
       shortestPathLength[e.first][i] = shortestPathLength[i][e.first] = std::min(shortestPathLength[e.first][i], d[i]);
