@@ -25,14 +25,18 @@ public:
 //
         unsigned index = 0;
         for( Point p : P )
-            points.emplace_back(make_pair(Delaunay::Point(p.x(),p.y()),index++));
+            points.emplace_back(make_pair(Point(p.x(),p.y()),index++));
 
         T.insert(points.begin(), points.end());
 
         for(Delaunay::Finite_edges_iterator it = T.finite_edges_begin(); it != T.finite_edges_end(); ++it) {
             Delaunay::Edge e=*it;
+//            unsigned i1 = e.first->vertex( (e.second+1)%3 )->info();
+//            unsigned i2 = e.first->vertex( (e.second+2)%3 )->info();
+
             unsigned i1 = e.first->vertex( (e.second+1)%3 )->info();
             unsigned i2 = e.first->vertex( (e.second+2)%3 )->info();
+
             assert(i1 < P.size() && i2 < P.size());
             E.emplace_back(make_pair(i1,i2));
         }

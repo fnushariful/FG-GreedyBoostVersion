@@ -19,26 +19,34 @@ typedef K::Point_2 Point;
 #include "CGALComponents.h"
 #include "DelaunayTriangulation.h"
 
+//#include <QtWidgets>
+//#include <QApplication>
+//#include <QLabel>
+//#include <QString>
+//#include <QTranslator>
 
-int main()
+int main(int argc, char *argv[])
 {
-    vector<Point> P;
-    unsigned numberOfPoints = 128000;
-    unsigned sizeOfSquare = 500;
-    generatePointsInsideASquare(numberOfPoints,sizeOfSquare,P);
+    QApplication a(argc, argv);
+    for( int i=1; i<=100; i++ ) {
+      vector<Point> P;
+      unsigned numberOfPoints = i*1000;
+      unsigned sizeOfSquare = 500;
+      generatePointsInsideASquare(numberOfPoints, sizeOfSquare, P);
 
-    double stretchFactor = 1.1;
-    unordered_map<int, vector<int>> adjMap, adjMap2;
-    vector<Edge> spannerEdges;
+      double stretchFactor = 1.1;
+      unordered_map<int, vector<int>> adjMap, adjMap2;
+      vector<Edge> spannerEdges;
 
-
-    CGAL::Real_timer clock;
-    clock.start();
-    constructGreedySpannerV5(P,spannerEdges,stretchFactor,adjMap);
-    cout<<spannerEdges.size()<<endl;
-    clock.stop();
-    cout<<"Time Needed "<<clock.time()<<" seconds = "<<clock.time()/60<<" minutes"<<endl;
-
+      CGAL::Real_timer clock;
+      clock.start();
+      constructGreedySpannerV5(P, spannerEdges, stretchFactor, adjMap);
+      drawSpannerUsingQT(P,spannerEdges,false);
+      cout << spannerEdges.size() << endl;
+      clock.stop();
+      cout << "Time Needed " << clock.time() << " seconds = " << clock.time() / 60
+           << " minutes" << endl;
+    }
 
 
 
